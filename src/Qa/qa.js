@@ -1,7 +1,8 @@
 'use strict'
 
 let emitter = require("global-queue");
-let WorkstationApi = require('resource-management-framework').WorkstationApi;
+let ServiceApi = require('resource-management-framework')
+	.ServiceApi;
 
 class Qa {
 	constructor() {
@@ -9,65 +10,37 @@ class Qa {
 	}
 
 	init() {
-		this.iris = new WorkstationApi();
+		this.iris = new ServiceApi();
 		this.iris.initContent();
 	}
 
 	//API
-	actionBootstrap({
-		workstation,
-		user_id,
-		user_type = "SystemEntity"
+	actionQuestions({
+		code
 	}) {
-		let qa;
-		return this.emitter.addTask('workstation', {
-				_action: 'by-id',
-				user_id,
-				user_type,
-				workstation
+		let ticket;
+		return this.emitter.addTask('ticket', {
+				_action: "by-code",
+				code
 			})
 			.then((res) => {
-				qa = _.find(res, (val) => (val.device_type === 'qa'));
-
-				return Promise.props({
-					ws: this.emitter.addTask('workstation', {
-							_action: 'occupy',
-							user_id,
-							user_type,
-							workstation
-						})
-						.then((res) => {
-							return res.workstation;
-						})
-						// 					questions : [{
-						//   text : String,
-						//   code : String,
-						//   answers : [{
-						//       text : String,
-						//       code : String
-						//     }]
-						// }]
-				});
+				ticket = res[0];
+				if (ticket.state !== 'closed')
+					return Promise.reject(new Error(`Ticket ${ticket.state}.`));
+				return this.iris.getQaQuestions();
 			})
-			.catch(err => {
-				console.log("QA BTSTRP ERR", err.stack);
+			.then((res) => {
+				return {
+					success: true,
+					questions: res
+				};
 			})
-	}
-
-	actionReady({
-		user_id,
-		workstation
-	}) {
-		return Promise.resolve({
-			success: true
-		});
-	}
-
-	actionSendAnswers({
-		workstation,
-		answers
-	}) {
-
+			.catch((err) => {
+				return {
+					success: false,
+					reason: ticket ? err.message : "Ticket not found."
+				}
+			});
 	}
 }
 
