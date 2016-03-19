@@ -27,6 +27,8 @@ class Qa {
 				ticket = res[0];
 				if (ticket.state !== 'closed')
 					return Promise.reject(new Error(`Ticket ${ticket.state}.`));
+				if (_.find(ticket.history, (entry) => (entry.event_name == 'qa')))
+					return Promise.reject(new Error(`Rating done.`));
 				return this.iris.getQaQuestions();
 			})
 			.then((res) => {
@@ -41,6 +43,16 @@ class Qa {
 					reason: ticket ? err.message : "Ticket not found."
 				}
 			});
+	}
+
+
+	actionAnswers({
+		answers,
+		workstation
+	}) {
+		return Promise.resolve({
+			success: true
+		});
 	}
 }
 
