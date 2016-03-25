@@ -13,8 +13,21 @@ class Qa {
 		this.iris = new ServiceApi();
 		this.iris.initContent();
 	}
-
-	//API
+	launch() {
+			this.emitter.on('ticket.emit.state', ({
+				ticket,
+				org_addr,
+				workstation,
+				event_name
+			}) => {
+				let to_join = ['ticket', event_name, org_addr, workstation];
+				this.emitter.emit('broadcast', {
+					event: _.join(to_join, "."),
+					data: ticket
+				});
+			});
+		}
+		//API
 	actionQuestions({
 		code
 	}) {
@@ -50,6 +63,18 @@ class Qa {
 		answers,
 		workstation
 	}) {
+		return Promise.resolve({
+			success: true
+		});
+	}
+
+	actionBootstrap({}) {
+		return Promise.resolve({
+			success: true
+		});
+	}
+
+	actionReady({}) {
 		return Promise.resolve({
 			success: true
 		});
