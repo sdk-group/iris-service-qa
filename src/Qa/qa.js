@@ -21,6 +21,7 @@ class Qa {
 				event_name
 			}) => {
 				let to_join = ['ticket', event_name, org_addr, workstation];
+				console.log("EMITTING", _.join(to_join, "."));
 				this.emitter.emit('broadcast', {
 					event: _.join(to_join, "."),
 					data: ticket
@@ -61,11 +62,55 @@ class Qa {
 
 	actionAnswers({
 		answers,
-		workstation
+		workstation,
+		ticket
 	}) {
-		return Promise.resolve({
-			success: true
-		});
+		return Promise.props({
+				history: this.emitter.addTask('history', {
+					_action: 'make-entry',
+					subject: {
+						type: 'system',
+						id: workstation
+					},
+					object: ticket,
+					event_name: 'qa',
+					reason: {}
+				}),
+				ticket: this.emitter.addTask('ticket', {
+					_action: 'ticket',
+					query,
+					keys: [ticket]
+				}),
+				pre: this.emitter.addTask('workstation', {
+					_action: 'workstation-organization-data',
+					workstation
+				})
+			})
+			.then(({
+				history,
+				ticket,
+				pre
+			}) => {
+				let tick = ticket[ticket];
+				history.local_time = moment.tz(pre.org_merged.org_timezone);
+				tick.history = tick.history || [];
+				tick.history.push(history);
+				return this.emitter.addTask('ticket', {
+					_action: 'set-ticket',
+					ticket: tick
+				});
+			})
+			.then((res) => {
+				return Promise.resolve({
+					success: true
+				});
+			})
+			.catch((err) => {
+				return Promise.resolve({
+					success: false,
+					reason: err.message
+				});
+			});
 	}
 
 	actionBootstrap({}) {
