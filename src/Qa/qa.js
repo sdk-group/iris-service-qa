@@ -30,7 +30,8 @@ class Qa {
 		}
 		//API
 	actionQuestions({
-		code
+		code,
+		device_type
 	}) {
 		let ticket;
 		return this.emitter.addTask('ticket', {
@@ -39,7 +40,16 @@ class Qa {
 			})
 			.then((res) => {
 				ticket = res[0];
-				if (ticket.state !== 'closed')
+				let permitted = [];
+				switch (device_type) {
+				case 'terminal':
+					permitted = ['closed'];
+					break;
+				case 'qa-mobile':
+					permitted = ['processing'];
+					break;
+				}
+				if (device_type && !_.find(permitted, ticket.state))
 					return Promise.reject(new Error(`Ticket ${ticket.state}.`));
 				if (_.find(ticket.history, (entry) => (entry.event_name == 'qa')))
 					return Promise.reject(new Error(`Rating done.`));
@@ -63,7 +73,7 @@ class Qa {
 	actionAnswers({
 		answers,
 		workstation,
-		ticket
+		code
 	}) {
 		return Promise.props({
 				history: this.emitter.addTask('history', {
@@ -77,9 +87,8 @@ class Qa {
 					reason: {}
 				}),
 				ticket: this.emitter.addTask('ticket', {
-					_action: 'ticket',
-					query,
-					keys: [ticket]
+					_action: 'by-code',
+					code
 				}),
 				pre: this.emitter.addTask('workstation', {
 					_action: 'workstation-organization-data',
@@ -91,7 +100,7 @@ class Qa {
 				ticket,
 				pre
 			}) => {
-				let tick = ticket[ticket];
+				let tick = ticket[0];
 				history.local_time = moment.tz(pre.org_merged.org_timezone);
 				tick.history = tick.history || [];
 				tick.history.push(history);
