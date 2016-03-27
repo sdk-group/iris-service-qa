@@ -21,12 +21,13 @@ class Qa {
 				event_name
 			}) => {
 				let to_join = ['ticket', event_name, org_addr, workstation];
-				console.log("EMITTING", _.join(to_join, "."));
+				// console.log("EMITTING", _.join(to_join, "."));
 				this.emitter.emit('broadcast', {
 					event: _.join(to_join, "."),
 					data: ticket
 				});
 			});
+			return Promise.resolve(true);
 		}
 		//API
 	actionQuestions({
@@ -45,11 +46,11 @@ class Qa {
 				case 'terminal':
 					permitted = ['closed'];
 					break;
-				case 'qa-mobile':
+				case 'qa':
 					permitted = ['processing'];
 					break;
 				}
-				if (device_type && !_.find(permitted, ticket.state))
+				if (device_type && !_.find(permitted, v => (v == ticket.state)))
 					return Promise.reject(new Error(`Ticket ${ticket.state}.`));
 				if (_.find(ticket.history, (entry) => (entry.event_name == 'qa')))
 					return Promise.reject(new Error(`Rating done.`));
@@ -82,7 +83,6 @@ class Qa {
 						type: 'system',
 						id: workstation
 					},
-					object: ticket,
 					event_name: 'qa',
 					reason: {}
 				}),
@@ -100,10 +100,13 @@ class Qa {
 				ticket,
 				pre
 			}) => {
+				console.log("QA", ticket, pre, history);
 				let tick = ticket[0];
-				history.local_time = moment.tz(pre.org_merged.org_timezone);
+				history.object = tick.id;
+				history.local_time = moment.tz(pre[workstation].org_merged.org_timezone);
 				tick.history = tick.history || [];
 				tick.history.push(history);
+				tick.qa_answers = answers;
 				return this.emitter.addTask('ticket', {
 					_action: 'set-ticket',
 					ticket: tick
