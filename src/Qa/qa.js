@@ -52,7 +52,7 @@ class Qa {
 				}
 				if (device_type && !_.find(permitted, v => (v == ticket.state)))
 					return Promise.reject(new Error(`Ticket ${ticket.state}.`));
-				if (_.find(ticket.history, (entry) => (entry.event_name == 'qa')))
+				if (_.find(ticket.history, (entry) => (entry.event_name == 'qa-check')))
 					return Promise.reject(new Error(`Rating done.`));
 				return this.iris.getQaQuestions();
 			})
@@ -83,7 +83,7 @@ class Qa {
 						type: 'system',
 						id: workstation
 					},
-					event_name: 'qa',
+					event_name: 'qa-check',
 					reason: {}
 				}),
 				ticket: this.emitter.addTask('ticket', {
@@ -100,8 +100,10 @@ class Qa {
 				ticket,
 				pre
 			}) => {
-				console.log("QA", ticket, pre, history);
+				// console.log("QA", ticket, pre, history);
 				let tick = ticket[0];
+				if (_.find(tick.history, (entry) => (entry.event_name == 'qa-check')))
+					return Promise.reject(new Error(`Rating done.`));
 				history.object = tick.id;
 				history.local_time = moment.tz(pre[workstation].org_merged.org_timezone);
 				tick.history = tick.history || [];
