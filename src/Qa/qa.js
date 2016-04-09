@@ -1,12 +1,12 @@
 'use strict'
 
-let emitter = require("global-queue");
+
 let ServiceApi = require('resource-management-framework')
 	.ServiceApi;
 
 class Qa {
 	constructor() {
-		this.emitter = emitter;
+		this.emitter = message_bus;
 	}
 
 	init() {
