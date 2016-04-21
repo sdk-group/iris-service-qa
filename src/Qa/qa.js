@@ -76,6 +76,8 @@ class Qa {
 		workstation,
 		code
 	}) {
+		let org;
+		let tick;
 		return Promise.props({
 				history: this.emitter.addTask('history', {
 					_action: 'make-entry',
@@ -101,20 +103,32 @@ class Qa {
 				pre
 			}) => {
 				// console.log("QA", ticket, pre, history);
-				let tick = ticket[0];
+				org = pre[workstation];
+				tick = ticket[0];
 				if (_.find(tick.history, (entry) => (entry.event_name == 'qa-check')))
 					return Promise.reject(new Error(`Rating done.`));
 				history.object = tick.id;
-				history.local_time = moment.tz(pre[workstation].org_merged.org_timezone);
+				history.local_time = moment.tz(org.org_merged.org_timezone);
 				tick.history = tick.history || [];
 				tick.history.push(history);
 				tick.qa_answers = answers;
-				return this.emitter.addTask('ticket', {
-					_action: 'set-ticket',
-					ticket: tick
+				return Promise.props({
+					srv: this.iris.getEntryTypeless(tick.service)
+						.then(res => res[tick.service]),
+					tick: this.emitter.addTask('ticket', {
+						_action: 'set-ticket',
+						ticket: tick
+					})
 				});
 			})
-			.then((res) => {
+			.then(({
+				srv
+			}) => {
+				this.emitter.emit('mkgu.send.rates', {
+					service: srv,
+					organization: org.org_merged,
+					ticket: tick
+				});
 				return Promise.resolve({
 					success: true
 				});
