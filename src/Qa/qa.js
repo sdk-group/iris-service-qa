@@ -14,7 +14,7 @@ class Qa {
 		this.iris.initContent();
 	}
 	launch() {
-			this.emitter.on('ticket.emit.state', ({
+			this.emitter.listenTask('ticket.emit.state', ({
 				ticket,
 				org_addr,
 				workstation,
@@ -124,7 +124,7 @@ class Qa {
 			.then(({
 				srv
 			}) => {
-				this.emitter.emit('mkgu.send.rates', {
+				this.emitter.command('mkgu.send.rates', {
 					service: srv,
 					organization: org.org_merged,
 					ticket: tick
