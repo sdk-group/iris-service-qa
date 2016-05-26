@@ -14,19 +14,6 @@ class Qa {
 		this.iris.initContent();
 	}
 	launch() {
-			this.emitter.listenTask('ticket.emit.state', ({
-				ticket,
-				org_addr,
-				workstation,
-				event_name
-			}) => {
-				let to_join = ['ticket', event_name, org_addr, workstation];
-				// console.log("EMITTING", _.join(to_join, "."));
-				this.emitter.emit('broadcast', {
-					event: _.join(to_join, "."),
-					data: ticket
-				});
-			});
 			return Promise.resolve(true);
 		}
 		//API
