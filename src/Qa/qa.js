@@ -50,6 +50,11 @@ class Qa {
 				};
 			})
 			.catch((err) => {
+				global.logger && logger.error(
+					err, {
+						module: 'qa',
+						method: 'questions'
+					});
 				return {
 					success: false,
 					reason: ticket ? err.message : "Ticket not found."
@@ -118,12 +123,6 @@ class Qa {
 				});
 				return Promise.resolve({
 					success: true
-				});
-			})
-			.catch((err) => {
-				return Promise.resolve({
-					success: false,
-					reason: err.message
 				});
 			});
 	}
