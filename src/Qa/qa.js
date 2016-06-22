@@ -14,6 +14,21 @@ class Qa {
 		this.iris.initContent();
 	}
 	launch() {
+			this.emitter.on('ticket.emit.state', ({
+				ticket,
+				org_addr,
+				workstation,
+				event_name
+			}) => {
+				if (event_name == 'close') {
+					let to_join = ['ticket.closed', org_addr, workstation];
+					console.log("QA EMITTING TICKSTATE", _.join(to_join, "."));
+					this.emitter.emit('broadcast', {
+						event: _.join(to_join, "."),
+						data: ticket
+					});
+				}
+			});
 			return Promise.resolve(true);
 		}
 		//API
