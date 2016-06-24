@@ -42,7 +42,10 @@ class Qa {
 				code
 			})
 			.then((res) => {
-				ticket = res[0];
+				if (!res.success) return Promise.reject(new Error('Ticket not found.'));
+
+				ticket = res.ticket;
+
 				let permitted = [];
 				switch (device_type) {
 				case 'terminal':
@@ -111,9 +114,11 @@ class Qa {
 			}) => {
 				// console.log("QA", ticket, pre, history);
 				org = pre[workstation];
-				tick = ticket[0];
+				if (!ticket.success) return Promise.reject(new Error('Ticket not found.'));
+
+				tick = ticket.ticket;
 				if (_.find(tick.history, (entry) => (entry.event_name == 'qa-check')))
-					return Promise.reject(new Error(`Rating done.`));
+					return Promise.reject(new Error('Rating done.'));
 				history.object = tick.id;
 				history.local_time = moment.tz(org.org_merged.org_timezone);
 				tick.history = tick.history || [];
