@@ -22,7 +22,6 @@ class Qa {
 			}) => {
 				if (event_name == 'close' || event_name == 'route') {
 					let to_join = ['ticket.closed', org_addr, workstation];
-					console.log("QA EMITTING TICKSTATE", _.join(to_join, "."));
 					this.emitter.emit('broadcast', {
 						event: _.join(to_join, "."),
 						data: ticket
