@@ -91,11 +91,13 @@ class Qa {
 				history: this.emitter.addTask('history', {
 					_action: 'make-entry',
 					subject: {
-						type: 'system',
-						id: workstation
+						type: 'system'
 					},
 					event_name: 'qa-check',
-					reason: {}
+					reason: {},
+					context: {
+						workstation
+					}
 				}),
 				ticket: this.emitter.addTask('ticket', {
 					_action: 'by-code',
