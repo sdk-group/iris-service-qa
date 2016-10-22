@@ -142,6 +142,10 @@ class Qa {
 					organization: org.org_merged,
 					ticket: tick
 				});
+				this.emitter.command('queue.update.head', {
+					organization: org.org_merged.id,
+					last: tick
+				});
 				return Promise.resolve({
 					success: true
 				});
