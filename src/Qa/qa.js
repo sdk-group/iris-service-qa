@@ -44,7 +44,21 @@ class Qa {
 				if (!res.success) return Promise.reject(new Error('Ticket not found.'));
 
 				ticket = res.ticket;
-
+				let hst = ticket.history[ticket.history.length - 2];
+				return (ticket.state == "closed" &&
+						hst &&
+						hst.event_name == "route" &&
+						hst.context.previous_service != hst.context.service) ?
+					this.emitter.addTask("ticket", {
+						_action: "session-tickets",
+						session: ticket.session
+					})
+					.then(res => res.success && _.maxBy(_.filter(res.tickets, t => (t.inherits == ticket.id)), 'inheritance_level')) :
+					Promise.resolve(ticket);
+			})
+			.then(tick => {
+				console.log("QAQ", tick);
+				tick && (ticket = tick);
 				let permitted = [];
 				switch (device_type) {
 				case 'terminal':
