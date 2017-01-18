@@ -101,6 +101,7 @@ class Qa {
 	}) {
 		let org;
 		let tick;
+		let start_ts = _.now();
 		return Promise.props({
 				history: this.emitter.addTask('history', {
 					_action: 'make-entry',
@@ -157,6 +158,8 @@ class Qa {
 					ticket: tick
 				});
 				this.emitter.command('queue.update.head', {
+					issued_at: start_ts,
+					sent_at: _.now(),
 					organization: org.org_merged.id,
 					last: tick
 				});
